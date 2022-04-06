@@ -98,8 +98,8 @@ function getColumn(date: Date): number {
                 Lunes
             </div>
             <ul class="gantt__row-bars">
-                <li style="grid-column: 1/span 60; background-color: #2ecaac;">Zarko&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 31/span 60; background-color: #2ecaac;">Joséxo&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 1/span 60; background-color: var(--green);">Zarko&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 31/span 60; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
             </ul>
         </div>
         <div class="gantt__row gantt__row--empty">
@@ -107,8 +107,8 @@ function getColumn(date: Date): number {
                 Martes
             </div>
             <ul class="gantt__row-bars">
-                <li style="grid-column: 164/span 55; background-color: #2ecaac;">Jeremy&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 159/span 100; background-color: #2ecaac;">Joséxo&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 164/span 55; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 159/span 100; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
             </ul>
         </div>
         <div class="gantt__row">
@@ -116,8 +116,8 @@ function getColumn(date: Date): number {
                 Miércoles
             </div>
             <ul class="gantt__row-bars">
-                <li style="grid-column: 33/span 76; background-color: #2ecaac;">Zarko&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 79/span 67; background-color: #2ecaac;">Jeremy&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 33/span 76; background-color: var(--green);">Zarko&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 79/span 67; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
             </ul>
         </div>
         <div class="gantt__row">
@@ -125,7 +125,7 @@ function getColumn(date: Date): number {
                 Jueves
             </div>
             <ul class="gantt__row-bars">
-                <li style="grid-column: 53/span 20; background-color: #2ecaac;">Joséxo&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 53/span 20; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
                 <li style="grid-column: 42/span 40; background-color: #54c6f9;">Carlangas&nbsp;&nbsp;&nbsp;</li>
             </ul>
         </div>
@@ -135,7 +135,7 @@ function getColumn(date: Date): number {
             </div>
             <ul class="gantt__row-bars">
                 <li style="grid-column: 188/span 50; background-color: #54c6f9;">Carlangas&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 200/span 40; background-color: #2ecaac;">Jeremy&nbsp;&nbsp;&nbsp;</li>
+                <li style="grid-column: 200/span 40; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
             </ul>
         </div>
     </div>

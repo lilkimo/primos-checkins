@@ -1,39 +1,72 @@
 <template>
-    <div class="box">
-        <div class="text_container">
-            <span class="nickname">Jeremy</span>
-            <span>Próximo turno en:</span>
-            <div class="upcoming_shift">
-                <span>
-                    <span class="time">0</span><span>d</span>
-                </span>
-                <span>
-                    <span class="time">0</span><span>h</span>
-                </span>
-                <span>
-                    <span class="time">02</span><span>m</span>
-                </span>
+    <div class="pad">
+        <div class="box attendance">
+                <div class="primo_onshift">
+                    <span class="nickname">Marlos Cundaca</span>
+                    <span>Pareja: Josexo Montacochinas</span>
+                </div>
+                <div>
+                    <span>Próximo turno en:</span>
+                    <div class="upcoming_shift">
+                        <span>
+                            <span class="time">0</span><span>d</span>
+                        </span>
+                        <span>
+                            <span class="time">0</span><span>h</span>
+                        </span>
+                        <span>
+                            <span class="time">02</span><span>m</span>
+                        </span>
+                    </div>
+                </div>
+            <div>
+                <button class="button">
+                    INICIAR TURNO
+                </button>
             </div>
         </div>
-        <button class="button">
-            Anachi
-        </button>
+        <div class="box aligns">
+            <button class="button">
+                REGISTROS
+            </button>
+            <button class="button">
+                ESTADÍSTICAS
+            </button>
+        </div>
     </div>
 </template>
 
 <style scoped>
-.box {
+.pad {
     display: flex;
-    justify-content: space-evenly;
     align-items: stretch;
-    width: 100%;
+    gap: 2em;
+}
+.box {
+    padding: 1em;
     border-radius: 1em;
     border: 2px solid #f5f5f533;
 }
+.attendance {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
+}
+.aligns {
+    display: grid;
+    gap: 1em;
+    grid-template-rows: auto auto;
+}
 .text_container {
+    flex: 1;
+    display: flex;
+}
+.primo_onshift {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 0 1em;
 }
 .nickname {
     font-size: 28px;
@@ -47,8 +80,12 @@
     font-size: 28px;
 }
 .button {
-    background-color: #2ecaac;
+    background-color: var(--green);
     cursor: pointer;
-    /*aspect-ratio: 1/1*/;
+    
+    padding: 0 2.5em;
+    border: 0;
+    border-radius: 1em;
+    height: 100%;
 }
 </style>

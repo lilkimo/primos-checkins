@@ -16,9 +16,14 @@ import Pad from './components/Pad.vue'
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family: "Roboto", sans-serif;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
-    color: #fff;
+    color: #fcf6f5;
+}
+
+:root {
+    --white: #fffaf0;
+    --green: #2bae66;
 }
 
 #app {
