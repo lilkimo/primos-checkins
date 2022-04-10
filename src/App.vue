@@ -24,6 +24,9 @@ import Pad from './components/Pad.vue'
 :root {
     --white: #fffaf0;
     --green: #2bae66;
+    --red: #ff645b;
+    --yellow: #fbc50d;
+    --blue: #0075ff;
 }
 
 #app {
