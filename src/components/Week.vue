@@ -4,20 +4,15 @@ import ChevronDownIcon from "./icons/IconChevronDown.vue";
 <script lang="ts">
 import { relativeTime } from "../resources/utils";
 
-const url = "http://worldtimeapi.org/api/timezone/America/Santiago";
-const date = new Date(await fetch(url).then(response => response.json()).then(data => data.datetime));
-const dataProperties = {minimumIntegerDigits: 2, useGrouping: false};
-
-
+const url = "http://127.0.0.1:8000/api/";
+const now = await fetch(url + "now").then(response => response.json());
+const week = await fetch(url + "shifts/week").then(response => response.json())
 
 export default {
     data() {
         return {
-            time: {
-                hours: date.getHours().toLocaleString('en-US', dataProperties),
-                minutes: date.getMinutes().toLocaleString('en-US', dataProperties),
-                dateTime: date,
-            },
+            time: now,
+            week: week,
             timeLinePosition: 0,
 
             requestDateInterval: 0,
@@ -28,45 +23,62 @@ export default {
     },
     methods: {
         setDateTime() {
-            fetch(url).then(response => response.json()).then(data => {
-                const date = new Date(data.datetime);
+            fetch(url + "now").then(response => response.json()).then(now => {
                 this.time = {
-                    hours: date.getHours().toLocaleString('en-US', dataProperties),
-                    minutes: date.getMinutes().toLocaleString('en-US', dataProperties),
-                    dateTime: date,
+                    time: now.time,
+                    datetime: now.datetime,
                 };
             });
         },
         setTimeLinePosition() {
-            this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(this.time.dateTime));
+            this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(new Date(this.time.datetime)));
         },
+        updateWeek() {
+            console.log("kieperokomo")
+            return fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
+        },
+        calculeTimeLineArgs() {
+            // Ancho de la columna + el border de .gantt + un offset para que coincida con los borders
+            this.timeLineOffset = parseFloat(window.getComputedStyle(this.$refs.days_column as Element).width) + 2 + 1;
+            this.blockWidth = parseFloat(window.getComputedStyle(this.$refs.first_block_column as Element).width);
+        }
     },
     created() {
         this.setDateTime();
         this.requestDateInterval = setInterval(this.setDateTime, 2000);
     },
-    mounted() {
-        // Ancho de la columna + el border de .gantt + un offset para que coincida con los borders
-        this.timeLineOffset = parseFloat(window.getComputedStyle(this.$refs.days_column as Element).width) + 2 + 1;
-        this.blockWidth = parseFloat(window.getComputedStyle(this.$refs.first_block_column as Element).width);
+    mounted() {        
+        this.calculeTimeLineArgs();
         
         this.setTimeLinePosition();
         this.moveTimeLineInterval = setInterval(this.setTimeLinePosition, 2000);
+        
+        window.addEventListener("resize", this.calculeTimeLineArgs)
+        window.addEventListener("resize", this.setTimeLinePosition)
+
+        this.emitter.on("update-week", () => this.updateWeek());
     },
     beforeUnmount() {
         clearInterval(this.requestDateInterval);
         clearInterval(this.moveTimeLineInterval);
+        
+        window.removeEventListener("resize", this.calculeTimeLineArgs)
+        window.removeEventListener("resize", this.setTimeLinePosition)
     },
 };
-function getColumn(date: Date): number {
-    return Math.round(relativeTime(date)*30);
+
+function getColumn(checkin: string): number {
+    return Math.ceil(relativeTime(new Date(checkin))*30) + 1;
+}
+function getExtension(checkin: string, checkout: string): number {
+    return Math.max(1, getColumn(checkout) - getColumn(checkin))
 }
 </script>
 
 
 <template>
     <div class="clock fade_in" :style="{ left: timeLinePosition + 'px' }">
-        <span class="time">{{ time.hours }}:{{ time.minutes }}</span>
+        <span class="time">{{ time.time }}</span>
         <ChevronDownIcon class="icon"/>
         <div class="time_line" />
     </div>
@@ -93,49 +105,20 @@ function getColumn(date: Date): number {
             <span>13-14</span>
             <span>15-16</span>
         </div>
-        <div class="gantt__row">
+        <div class="gantt__row" v-for="(weekday, index) in ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']">
             <div class="gantt__row-first">
-                Lunes
+                {{ weekday }}
             </div>
             <ul class="gantt__row-bars">
-                <li style="grid-column: 1/span 60; background-color: var(--green);">Zarko&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 31/span 60; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
-            </ul>
-        </div>
-        <div class="gantt__row gantt__row--empty">
-            <div class="gantt__row-first">
-                Martes
-            </div>
-            <ul class="gantt__row-bars">
-                <li style="grid-column: 164/span 55; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 159/span 100; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
-            </ul>
-        </div>
-        <div class="gantt__row">
-            <div class="gantt__row-first">
-                Miércoles
-            </div>
-            <ul class="gantt__row-bars">
-                <li style="grid-column: 33/span 76; background-color: var(--green);">Zarko&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 79/span 67; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
-            </ul>
-        </div>
-        <div class="gantt__row">
-            <div class="gantt__row-first">
-                Jueves
-            </div>
-            <ul class="gantt__row-bars">
-                <li style="grid-column: 53/span 20; background-color: var(--green);">Joséxo&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 42/span 40; background-color: #54c6f9;">Carlangas&nbsp;&nbsp;&nbsp;</li>
-            </ul>
-        </div>
-        <div class="gantt__row">
-            <div class="gantt__row-first">
-                Viernes
-            </div>
-            <ul class="gantt__row-bars">
-                <li style="grid-column: 188/span 50; background-color: #54c6f9;">Carlangas&nbsp;&nbsp;&nbsp;</li>
-                <li style="grid-column: 200/span 40; background-color: var(--green);">Jeremy&nbsp;&nbsp;&nbsp;</li>
+                <li 
+                    v-for="shift in week[index]"
+                    :style="{
+                        'grid-column': getColumn(shift.checkin) + '/span ' + getExtension(shift.checkin, shift.checkout?? time.datetime),
+                        'background-color': 'var(--green)'
+                    }"
+                >
+                    {{ shift.nick }}&nbsp;&nbsp;&nbsp;
+                </li>
             </ul>
         </div>
     </div>
@@ -199,6 +182,7 @@ body, html {
     display: grid;
     grid-template-columns: repeat(240, 1fr);
     grid-gap: .25em 0;
+    grid-auto-flow: column dense;
 }
 .gantt__row-bars li {
     text-align: right !important;
@@ -224,17 +208,17 @@ body, html {
 }
 .time {
     font-size: 10px;
-    background-color: rgb(25, 0, 255);
+    background-color: var(--blue);
     vertical-align: middle;
     padding: 0 .5em;
     border-radius: 1.5em;
 }
 .icon {
-    color: rgb(25, 0, 255);
+    color: var(--blue);
 }
 .time_line {
     flex: 1;
-    border-right: 2px dashed rgb(25, 0, 255);
+    border-right: 2px dashed var(--blue);
 }
 
 .fade_in {
