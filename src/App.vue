@@ -1,11 +1,55 @@
 <script setup lang="ts">
+import { useIsAuthenticated } from './composition-api/useIsAuthenticated';
+import { useMsal } from "./composition-api/useMsal";
+import { InteractionRequiredAuthError, InteractionStatus } from "@azure/msal-browser";
+import { reactive, onMounted, watch } from 'vue'
+import { loginRequest } from "./authConfig";
+import { callMsGraph } from "./utils/MsGraphApiCall";
+
 import Week from './components/Week.vue'
 import Pad from './components/Pad.vue'
+
+const isAuthenticated = useIsAuthenticated();
+
+const { instance, inProgress } = useMsal();
+const state = reactive({
+	resolved: false,
+	data: {}
+});
+
+async function getGraphData() {
+    const response = await instance.acquireTokenSilent({
+        ...loginRequest
+    }).catch(async (e) => {
+        if (e instanceof InteractionRequiredAuthError) {
+            await instance.acquireTokenRedirect(loginRequest);
+        }
+        throw e;
+    });
+	if (inProgress.value === InteractionStatus.None) {
+		const graphData = await callMsGraph(response.accessToken);
+        state.data = await fetch("http://127.0.0.1:8000/api/primos/" + graphData.mail).then(response => response.json())
+		state.resolved = true;
+		stopWatcher();
+	}
+}
+
+onMounted(() => {
+	getGraphData();
+});
+
+const stopWatcher = watch(inProgress, () => {
+    if (!state.resolved) {
+		getGraphData();
+	}
+});
 </script>
 
 <template>
-    <Pad />
-    <Week />
+    <div v-if="isAuthenticated && state.resolved">
+        <Pad v-bind:primoInfo="state.data" />
+        <Week />
+    </div>
 </template>
 
 <style>

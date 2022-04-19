@@ -1,27 +1,33 @@
 <script setup lang="ts">
-import moment from 'moment'
-moment.locale('es')
+import LogoutIcon from "./icons/IconLogout.vue";
+
+import { useMsal } from '../composition-api/useMsal';
+const { instance } = useMsal();
+
+const logout = () => {
+    instance.logoutRedirect({ account: instance.getActiveAccount() });
+}
 </script>
 
 <script lang="ts">
 const url = "http://127.0.0.1:8000/api/";
 const nowInfo = await fetch(url + "now").then(response => response.json());
-console.log(nowInfo)
-const primoInfo = await fetch(url + "primos/7").then(response => response.json());
-//console.log(primoInfo)
 
 export default {
+    props: {
+        primoInfo: Object
+    },
     data() {
         return {
             datetime: new Date(nowInfo.datetime),
             primo: Object.assign({},
-                primoInfo,
+                this.primoInfo,
                 { 
-                    onshift: nowInfo.ushift.isactive && nowInfo.pair.some( (p: any) => p.rol == primoInfo.rol )
+                    onshift: nowInfo.ushift.isactive && nowInfo.pair.some( (p: any) => p.rol == this.primoInfo.rol )
                 }
             ),
 
-            rshift: primoInfo.running,
+            rshift: this.primoInfo.running,
             ushift: {
                 shift: nowInfo.ushift.shift,
                 checkin: nowInfo.ushift.checkin,
@@ -36,7 +42,7 @@ export default {
         requestNow() {
             return fetch(url + "now").then(response => response.json()).then(now => {
                 this.datetime = new Date(now.datetime);
-                this.primo.onshift = now.ushift.isactive && now.pair.some( (p: any) => p.rol == primoInfo.rol )
+                this.primo.onshift = now.ushift.isactive && now.pair.some( (p: any) => p.rol == this.primo.rol )
 
                 this.ushift = {
                     shift: now.ushift.shift,
@@ -45,10 +51,9 @@ export default {
                     pair: now.pair,
                 }
             });
-            //console.log(this.ushift)
         },
         requestPrimo() {
-            return fetch(url + "primos/7").then(response => response.json()).then(primo => {
+            return fetch(url + "primos/" + this.mail).then(response => response.json()).then(primo => {
                 this.primo = Object.assign(this.primo, primo)
                 this.rshift = primo.running
             })
@@ -67,7 +72,7 @@ export default {
 
             return fetch(url + "shifts", requestOptions).then( response => {
                 if (response.ok)
-                    return this.requestPrimo().then( () => this.emitter.emit("update-week") );
+                    return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
                 event.target.disabled = false;
             });
         },
@@ -83,7 +88,7 @@ export default {
             };
             return fetch(url + "shifts", requestOptions).then( response => {
                 if (response.ok)
-                    return this.requestPrimo().then( () => this.emitter.emit("update-week") );
+                    return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
                 event.target.disabled = false;
             });
         },
@@ -99,6 +104,7 @@ export default {
         }
     },
     created() {
+        //this.requestPrimo();
         this.requestNow();
         this.requestNowInterval = setInterval(this.requestNow, 2000);
     },
@@ -116,7 +122,10 @@ function sameDay(date1: Date, date2: Date): boolean {
     <div class="pad">
         <div class="box attendance">
             <div class="primo_onshift">
-                <span class="nickname">{{ primo.nick }}</span>
+                <div>
+                    <span class="nickname" style="vertical-align: middle;">{{ primo.nick }}</span>
+                    &nbsp;<LogoutIcon v-on:click="logout" class="icon"/>
+                </div>
                 <span
                     v-if="ushift.pair.some( (p: any) => p.rol == primo.rol) && ushift.pair.length > 1"
                 >
@@ -190,38 +199,42 @@ function sameDay(date1: Date, date2: Date): boolean {
             </div>
             <div>
                 <!--Si no hay turnos corriendo ni es tu turno-->
-                <button disabled class="button"
+                <button disabled class="button attendance_button"
                     v-if="rshift == null && !primo.onshift"
                 >
-                    NO DISPONIBLE
+                    INICIAR<br>
+                    TURNO
                 </button>
                 <!--Si no hay turnos corriendo y es tu turno-->
-                <button class="button"
+                <button class="button attendance_button"
                     v-on:click="pushShift"
                     v-else-if="rshift == null && primo.onshift"
                 >
-                    INICIAR TURNO
+                    INICIAR<br>
+                    TURNO
                 </button>
                 <!--Si hay algún turno corriendo y el siguiente no es inmediato-->
-                <button class="button" style="background-color: var(--red);"
+                <button class="button attendance_button" style="background-color: var(--red);"
                     v-on:click="updateShift"
                     v-else-if="!primo.onshift || duringAShift(rshift.checkin, ushift)"
                 >
-                    MARCAR SALIDA
+                    MARCAR&nbsp;<br>
+                    SALIDA
                 </button>
                 <!--Si hay algún turno corriendo y el siguiente es inmediato-->
-                <button class="button" v-on:click="renewShift" style="background-color: var(--blue);"
+                <button class="button attendance_button" v-on:click="renewShift" style="background-color: var(--blue);"
                     v-else
                 >
-                    RENOVAR TURNO
+                    RENOVAR<br>
+                    TURNO
                 </button>
             </div>
         </div>
         <div class="box aligns">
-            <button class="button">
+            <button class="button aligns_button">
                 REGISTROS
             </button>
-            <button class="button">
+            <button class="button aligns_button">
                 ESTADÍSTICAS
             </button>
         </div>
@@ -246,9 +259,9 @@ function sameDay(date1: Date, date2: Date): boolean {
     width: 100%;
 }
 .aligns {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1em;
-    grid-template-rows: auto auto;
 }
 .text_container {
     flex: 1;
@@ -264,6 +277,10 @@ function sameDay(date1: Date, date2: Date): boolean {
 .nickname {
     font-size: 28px;
 }
+.icon {
+    vertical-align: middle;
+    cursor: pointer;
+}
 .upcoming_shift {
     display: flex;
     justify-content: center;
@@ -276,15 +293,19 @@ function sameDay(date1: Date, date2: Date): boolean {
     background-color: var(--green);
     cursor: pointer;
     
-    padding: 0 2.5em;
     border: 0;
     border-radius: 1em;
     height: 100%;
 }
-
 .button:disabled,
 .button[disabled] {
     background-color: #f5f5f533;
     cursor: default;
+}
+.attendance_button {
+    padding: 0 1.5em;
+}
+.aligns_button {
+    padding: 0 .65em;
 }
 </style>

@@ -34,7 +34,6 @@ export default {
             this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(new Date(this.time.datetime)));
         },
         updateWeek() {
-            console.log("kieperokomo")
             return fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
         },
         calculeTimeLineArgs() {
@@ -56,7 +55,7 @@ export default {
         window.addEventListener("resize", this.calculeTimeLineArgs)
         window.addEventListener("resize", this.setTimeLinePosition)
 
-        this.emitter.on("update-week", () => this.updateWeek());
+        this.$emitter.on("update-week", () => this.updateWeek());
     },
     beforeUnmount() {
         clearInterval(this.requestDateInterval);

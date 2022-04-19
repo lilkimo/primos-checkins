@@ -1,5 +1,6 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.web.json",
+  // Esto tira un error de que un módulo no existe, ahí hay que cachar para arreglarlo
+  //"extends": "@vue/tsconfig/tsconfig.web.json",
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
   "compilerOptions": {
     "baseUrl": ".",

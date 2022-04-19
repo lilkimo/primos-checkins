@@ -8,6 +8,7 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
+    "@azure/msal-browser": "^2.23.0",
     "mitt": "^3.0.0",
     "vue": "^3.2.31"
   },
