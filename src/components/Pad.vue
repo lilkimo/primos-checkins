@@ -53,7 +53,7 @@ export default {
             });
         },
         requestPrimo() {
-            return fetch(url + "primos/" + this.mail).then(response => response.json()).then(primo => {
+            return fetch(url + "primos/" + this.primo.mail).then(response => response.json()).then(primo => {
                 this.primo = Object.assign(this.primo, primo)
                 this.rshift = primo.running
             })
