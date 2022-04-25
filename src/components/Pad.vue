@@ -24,7 +24,7 @@ export default {
             primo: Object.assign({},
                 this.primoInfo,
                 { 
-                    onshift: nowInfo.upcoming.isactive && nowInfo.pair.some( (p: any) => p.mail == this.primoInfo.mail )
+                    onshift: nowInfo.upcoming.isactive && nowInfo.pair.some( (p: any) => p.mail == this.primoInfo?.mail )
                 }
             ),
 
@@ -68,7 +68,7 @@ export default {
         },
         
         pushShift(event: Event) {
-            event.target.disabled = true;
+            (event.target as HTMLButtonElement).disabled = true;
 
             const requestOptions = {
                 method: 'POST',
@@ -81,11 +81,11 @@ export default {
             return fetch(url + "shifts", requestOptions).then( response => {
                 if (response.ok)
                     return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
-                event.target.disabled = false;
+                (event.target as HTMLButtonElement).disabled = false;
             });
         },
         updateShift(event: Event) {
-            event.target.disabled = true;
+            (event.target as HTMLButtonElement).disabled = true;
 
             const requestOptions = {
                 method: 'PUT',
@@ -97,11 +97,11 @@ export default {
             return fetch(url + "shifts", requestOptions).then( response => {
                 if (response.ok)
                     return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
-                event.target.disabled = false;
+                (event.target as HTMLButtonElement).disabled = false;
             });
         },
         renewShift(event: Event) {
-            event.target.disabled = true;
+            (event.target as HTMLButtonElement).disabled = true;
 
             return this.updateShift(event).then( () => this.pushShift(event) );
         },
@@ -109,7 +109,7 @@ export default {
     created() {
         //this.requestPrimo();
         this.requestNow();
-        this.requestNowInterval = setInterval(this.requestNow, 2000);
+        this.requestNowInterval = window.setInterval(this.requestNow, 2000);
     },
     beforeUnmount() {
         clearInterval(this.requestNowInterval);
@@ -143,30 +143,30 @@ function sameDay(date1: Date, date2: Date): boolean {
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(rshift.checkin))/(60 * 60 * 1000))
+                            Math.floor((+new Date(datetime) - +new Date(rshift.checkin))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(rshift.checkin))/(60 * 1000)) % 60
+                            Math.floor((+new Date(datetime) - +new Date(rshift.checkin))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
             </div>
             <!--Si no hay turnos corriendo y el siguiente turno ya empezó-->
             <div
-                v-else-if="new Date(nshift.checkin) <= datetime"
+                v-else-if="+new Date(nshift.checkin) <= +datetime"
             >
                 <span>El turno empezó hace:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(nshift.checkin))/(60 * 60 * 1000))
+                            Math.floor((+new Date(datetime) - +new Date(nshift.checkin))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(nshift.checkin))/(60 * 1000)) % 60
+                            Math.floor((+new Date(datetime) - +new Date(nshift.checkin))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
@@ -179,12 +179,12 @@ function sameDay(date1: Date, date2: Date): boolean {
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(nshift.checkin) - new Date(datetime))/(60 * 60 * 1000))
+                            Math.floor((+new Date(nshift.checkin) - +new Date(datetime))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(nshift.checkin) - new Date(datetime))/(60 * 1000)) % 60
+                            Math.floor((+new Date(nshift.checkin) - +new Date(datetime))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
@@ -196,7 +196,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                 <div style="display: grid;">
                     <span style="text-align: center;">Próximo turno el:</span>
                     <span class="time">
-                        {{ new Date(nshift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ nshift.block }}
+                        {{ +new Date(nshift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ nshift.block }}
                     </span>
                 </div>
             </div>

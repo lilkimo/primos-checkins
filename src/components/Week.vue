@@ -53,13 +53,13 @@ export default {
     },
     created() {
         this.setDateTime();
-        this.requestDateInterval = setInterval(this.setDateTime, 2000);
+        this.requestDateInterval = window.setInterval(this.setDateTime, 2000);
     },
     mounted() {        
         this.calculeTimeLineArgs();
         
         this.setTimeLinePosition();
-        this.moveTimeLineInterval = setInterval(this.setTimeLinePosition, 2000);
+        this.moveTimeLineInterval = window.setInterval(this.setTimeLinePosition, 2000);
         
         window.addEventListener("resize", this.calculeTimeLineArgs)
         window.addEventListener("resize", this.setTimeLinePosition)

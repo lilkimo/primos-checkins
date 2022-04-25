@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 
-import mitt from 'mitt';
+import mitt, { Emitter } from 'mitt';
 import { msalPlugin } from "./plugins/msalPlugin";
 import { msalInstance, loginRequest } from "./authConfig";
 import { AuthenticationResult, EventType } from "@azure/msal-browser";
