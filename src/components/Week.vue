@@ -13,12 +13,16 @@ export default {
         return {
             time: now,
             week: week,
+            
             timeLinePosition: 0,
+
+            timeLineOffset: 0,
+            blockWidth: 0,
+            clockDisplayHeight: 0,
+            ganttHeight: 0,
 
             requestDateInterval: 0,
             moveTimeLineInterval: 0,
-            timeLineOffset: 0,
-            blockWidth: 0,
         };
     },
     methods: {
@@ -37,9 +41,14 @@ export default {
             return fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
         },
         calculeTimeLineArgs() {
-            // Ancho de la columna + el border de .gantt + un offset para que coincida con los borders
-            this.timeLineOffset = parseFloat(window.getComputedStyle(this.$refs.days_column as Element).width) + 2 + 1;
             this.blockWidth = parseFloat(window.getComputedStyle(this.$refs.first_block_column as Element).width);
+            this.clockDisplayHeight = parseFloat(window.getComputedStyle(this.$refs.clock_display as Element).height)
+            
+            const gantt = window.getComputedStyle(this.$refs.gantt as Element)
+            this.ganttHeight = parseFloat(gantt.height)
+            // Ancho de la columna + el border de .gantt + un offset para que coincida con los borders (.5 del borde)
+            this.timeLineOffset = parseFloat(window.getComputedStyle(this.$refs.days_column as Element).width)
+                                + (1.5 * parseFloat(gantt.borderWidth))
         }
     },
     created() {
@@ -76,12 +85,16 @@ function getExtension(checkin: string, checkout: string): number {
 
 
 <template>
-    <div class="clock fade_in" :style="{ left: timeLinePosition + 'px' }">
-        <span class="time">{{ time.time }}</span>
-        <ChevronDownIcon class="icon"/>
+    <div class="clock fade_in" style = "position: absolute;"
+        :style="{ left: timeLinePosition + 'px', height: ganttHeight + clockDisplayHeight + 'px' }"
+    >
+        <div class="clock" ref="clock_display">
+            <span class="time">{{ time.time }}</span>
+            <ChevronDownIcon class="icon"/>
+        </div>
         <div class="time_line" />
     </div>
-    <div class="gantt">
+    <div class="gantt" ref="gantt" :style="{ marginTop: clockDisplayHeight + 'px' }">
         <div class="gantt_columns">
             <div class="gantt__row-first" ref="days_column" />
             <span ref="first_block_column"></span>
@@ -104,19 +117,23 @@ function getExtension(checkin: string, checkout: string): number {
             <span>13-14</span>
             <span>15-16</span>
         </div>
-        <div class="gantt__row" v-for="(weekday, index) in ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']">
+        <div class="gantt__row"
+            v-for="(weekday, index) in ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes']"
+            :key="weekday"
+        >
             <div class="gantt__row-first">
                 {{ weekday }}
             </div>
             <ul class="gantt__row-bars">
                 <li 
                     v-for="shift in week[index]"
+                    :key="shift.id"
                     :style="{
                         'grid-column': getColumn(shift.checkin) + '/span ' + getExtension(shift.checkin, shift.checkout?? time.datetime),
                         'background-color': 'var(--green)'
                     }"
                 >
-                    {{ shift.nick }}&nbsp;&nbsp;&nbsp;
+                    {{ shift.primo.nick }}&nbsp;&nbsp;&nbsp;
                 </li>
             </ul>
         </div>
@@ -135,7 +152,6 @@ body, html {
     overflow: hidden;
     box-sizing: border-box;
     min-width: 55em;
-    margin: 2em 0 0 0;
     /*box-shadow: 0 75px 125px -57px #7e8f94;*/
 }
 .gantt__row {
@@ -199,10 +215,7 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: absolute;
-    height:100%;
     width: 0;
-    /*left: 400px;*/
     z-index: 1;
 }
 .time {

@@ -46,7 +46,9 @@ const stopWatcher = watch(inProgress, () => {
 </script>
 
 <template>
-    <div v-if="isAuthenticated && state.resolved">
+    <div
+        v-if="isAuthenticated && state.resolved"
+    >
         <Pad v-bind:primoInfo="state.data" />
         <Week />
     </div>

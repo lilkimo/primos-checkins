@@ -12,6 +12,7 @@ const logout = () => {
 <script lang="ts">
 const url = "http://127.0.0.1:8000/api/";
 const nowInfo = await fetch(url + "now").then(response => response.json());
+console.log(nowInfo)
 
 export default {
     props: {
@@ -23,15 +24,16 @@ export default {
             primo: Object.assign({},
                 this.primoInfo,
                 { 
-                    onshift: nowInfo.ushift.isactive && nowInfo.pair.some( (p: any) => p.rol == this.primoInfo.rol )
+                    onshift: nowInfo.upcoming.isactive && nowInfo.pair.some( (p: any) => p.mail == this.primoInfo.mail )
                 }
             ),
 
             rshift: this.primoInfo.running,
+            nshift: this.primoInfo.next,
             ushift: {
-                shift: nowInfo.ushift.shift,
-                checkin: nowInfo.ushift.checkin,
-                checkout: nowInfo.ushift.checkout,
+                block: nowInfo.upcoming.block,
+                checkin: nowInfo.upcoming.checkin,
+                checkout: nowInfo.upcoming.checkout,
                 pair: nowInfo.pair,
             },
 
@@ -39,24 +41,30 @@ export default {
         };
     },
     methods: {
-        requestNow() {
-            return fetch(url + "now").then(response => response.json()).then(now => {
-                this.datetime = new Date(now.datetime);
-                this.primo.onshift = now.ushift.isactive && now.pair.some( (p: any) => p.rol == this.primo.rol )
-
-                this.ushift = {
-                    shift: now.ushift.shift,
-                    checkin: now.ushift.checkin,
-                    checkout: now.ushift.checkout,
-                    pair: now.pair,
-                }
-            });
-        },
         requestPrimo() {
             return fetch(url + "primos/" + this.primo.mail).then(response => response.json()).then(primo => {
                 this.primo = Object.assign(this.primo, primo)
                 this.rshift = primo.running
+                this.nshift = primo.next
             })
+        },
+        requestNow() {
+            return fetch(url + "now").then(response => response.json()).then(now => {
+                this.datetime = new Date(now.datetime);
+                this.primo.onshift = now.upcoming.isactive && now.pair.some( (p: any) => p.mail == this.primo.mail )
+
+                // Cada vez que cambia el bloque solicitamos de nuevo la
+                // info del primo, para ver cual es su siguiente turno
+                if (now.upcoming.block != this.ushift.block)
+                    this.requestPrimo()
+                
+                this.ushift = {
+                    block: now.upcoming.block,
+                    checkin: now.upcoming.checkin,
+                    checkout: now.upcoming.checkout,
+                    pair: now.pair,
+                }
+            });
         },
         
         pushShift(event: Event) {
@@ -66,7 +74,7 @@ export default {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    rol: this.primo.rol
+                    mail: this.primo.mail
                 })
             };
 
@@ -97,11 +105,6 @@ export default {
 
             return this.updateShift(event).then( () => this.pushShift(event) );
         },
-
-        duringAShift(date: string, shift: any): boolean {
-            const _date = new Date(date);
-            return (new Date(shift.checkin) <= _date) && (_date <= new Date(shift.checkout));
-        }
     },
     created() {
         //this.requestPrimo();
@@ -127,9 +130,9 @@ function sameDay(date1: Date, date2: Date): boolean {
                     &nbsp;<LogoutIcon v-on:click="logout" class="icon"/>
                 </div>
                 <span
-                    v-if="ushift.pair.some( (p: any) => p.rol == primo.rol) && ushift.pair.length > 1"
+                    v-if="ushift.pair.some( (p: any) => p.mail == primo.mal) && ushift.pair.length > 1"
                 >
-                    Pareja: {{ ushift.pair.filter( (p: any) => p.rol != primo.rol ).map( (p: any) => p.nick ).join(", ") }}
+                    Pareja: {{ ushift.pair.filter( (p: any) => p.mail != primo.mail ).map( (p: any) => p.nick ).join(", ") }}
                 </span>
             </div>
             <!-- Si hay turnos pendientes -->
@@ -152,36 +155,36 @@ function sameDay(date1: Date, date2: Date): boolean {
             </div>
             <!--Si no hay turnos corriendo y el siguiente turno ya empezó-->
             <div
-                v-else-if="new Date(ushift.checkin) <= datetime"
+                v-else-if="new Date(nshift.checkin) <= datetime"
             >
                 <span>El turno empezó hace:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(ushift.checkin))/(60 * 60 * 1000))
+                            Math.floor((new Date(datetime) - new Date(nshift.checkin))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(datetime) - new Date(ushift.checkin))/(60 * 1000)) % 60
+                            Math.floor((new Date(datetime) - new Date(nshift.checkin))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
             </div>
             <!--Si no hay turnos corriendo y el siguiente aún no empieza y es hoy-->
             <div
-                v-else-if="sameDay(new Date(ushift.checkin), datetime)"
+                v-else-if="sameDay(new Date(nshift.checkin), datetime)"
             >
                 <span>Próximo turno en:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(ushift.checkin) - new Date(datetime))/(60 * 60 * 1000))
+                            Math.floor((new Date(nshift.checkin) - new Date(datetime))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((new Date(ushift.checkin) - new Date(datetime))/(60 * 1000)) % 60
+                            Math.floor((new Date(nshift.checkin) - new Date(datetime))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
@@ -191,9 +194,9 @@ function sameDay(date1: Date, date2: Date): boolean {
                 v-else
             >
                 <div style="display: grid;">
-                    <span style="text-align: center;">Próximo turno:</span>
+                    <span style="text-align: center;">Próximo turno el:</span>
                     <span class="time">
-                        {{ new Date(ushift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ ushift.shift }}
+                        {{ new Date(nshift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ nshift.block }}
                     </span>
                 </div>
             </div>
@@ -216,7 +219,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                 <!--Si hay algún turno corriendo y el siguiente no es inmediato-->
                 <button class="button attendance_button" style="background-color: var(--red);"
                     v-on:click="updateShift"
-                    v-else-if="!primo.onshift || duringAShift(rshift.checkin, ushift)"
+                    v-else-if="!primo.onshift || (rshift.block == ushift.block)"
                 >
                     MARCAR&nbsp;<br>
                     SALIDA
