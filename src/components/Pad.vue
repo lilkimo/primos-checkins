@@ -130,7 +130,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                     &nbsp;<LogoutIcon v-on:click="logout" class="icon"/>
                 </div>
                 <span
-                    v-if="ushift.pair.some( (p: any) => p.mail == primo.mal) && ushift.pair.length > 1"
+                    v-if="ushift.pair.some( (p: any) => p.mail == primo.mail) && ushift.pair.length > 1"
                 >
                     Pareja: {{ ushift.pair.filter( (p: any) => p.mail != primo.mail ).map( (p: any) => p.nick ).join(", ") }}
                 </span>
@@ -196,7 +196,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                 <div style="display: grid;">
                     <span style="text-align: center;">Próximo turno el:</span>
                     <span class="time">
-                        {{ +new Date(nshift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ nshift.block }}
+                        {{ new Date(nshift.checkin).toLocaleString('es-ES', {weekday: 'long'}) }} {{ nshift.block }}
                     </span>
                 </div>
             </div>
