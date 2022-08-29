@@ -2,6 +2,7 @@
 import LogoutIcon from "./icons/IconLogout.vue";
 
 import { useMsal } from '../composition-api/useMsal';
+import { url } from "@/resources/utils";
 const { instance } = useMsal();
 
 const logout = () => {
@@ -10,7 +11,6 @@ const logout = () => {
 </script>
 
 <script lang="ts">
-const url = "http://127.0.0.1:8000/api/";
 const nowInfo = await fetch(url + "now").then(response => response.json());
 console.log(nowInfo)
 
@@ -28,8 +28,8 @@ export default {
                 }
             ),
 
-            rshift: this.primoInfo.running,
-            nshift: this.primoInfo.next,
+            rshift: this.primoInfo?.running,
+            nshift: this.primoInfo?.next,
             ushift: {
                 block: nowInfo.upcoming.block,
                 checkin: nowInfo.upcoming.checkin,
@@ -41,18 +41,11 @@ export default {
         };
     },
     methods: {
-        requestPrimo() {
-            return fetch(url + "primos/" + this.primo.mail).then(response => response.json()).then(primo => {
-                this.primo = Object.assign(this.primo, primo)
-                this.rshift = primo.running
-                this.nshift = primo.next
-            })
-        },
         requestNow() {
-            return fetch(url + "now").then(response => response.json()).then(now => {
+            fetch(url + "now").then(response => response.json()).then(now => {
                 this.datetime = new Date(now.datetime);
                 this.primo.onshift = now.upcoming.isactive && now.pair.some( (p: any) => p.mail == this.primo.mail )
-
+                
                 // Cada vez que cambia el bloque solicitamos de nuevo la
                 // info del primo, para ver cual es su siguiente turno
                 if (now.upcoming.block != this.ushift.block)
@@ -66,6 +59,13 @@ export default {
                 }
             });
         },
+        async requestPrimo() {
+            return fetch(url + "primos/" + this.primo.mail).then(response => response.json()).then(primo => {
+                this.primo = Object.assign(this.primo, primo)
+                this.rshift = primo.running
+                this.nshift = primo.next
+            })
+        },
         
         pushShift(event: Event) {
             (event.target as HTMLButtonElement).disabled = true;
@@ -78,13 +78,13 @@ export default {
                 })
             };
 
-            return fetch(url + "shifts", requestOptions).then( response => {
+            fetch(url + "shifts", requestOptions).then( response => {
                 if (response.ok)
                     return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
                 (event.target as HTMLButtonElement).disabled = false;
             });
         },
-        updateShift(event: Event) {
+        async updateShift(event: Event) {
             (event.target as HTMLButtonElement).disabled = true;
 
             const requestOptions = {
@@ -107,7 +107,6 @@ export default {
         },
     },
     created() {
-        //this.requestPrimo();
         this.requestNow();
         this.requestNowInterval = window.setInterval(this.requestNow, 2000);
     },
@@ -130,9 +129,11 @@ function sameDay(date1: Date, date2: Date): boolean {
                     &nbsp;<LogoutIcon v-on:click="logout" class="icon"/>
                 </div>
                 <span
-                    v-if="ushift.pair.some( (p: any) => p.mail == primo.mail) && ushift.pair.length > 1"
+                    v-if="ushift.pair.length > 1 && ushift.pair.some( (p: any) => p.mail == primo.mail)"
                 >
-                    Pareja: {{ ushift.pair.filter( (p: any) => p.mail != primo.mail ).map( (p: any) => p.nick ).join(", ") }}
+                    Pareja: {{
+                        ushift.pair.filter( (p: any) => p.mail != primo.mail ).map( (p: any) => p.nick ).join(", ")
+                    }}
                 </span>
             </div>
             <!-- Si hay turnos pendientes -->
@@ -253,7 +254,7 @@ function sameDay(date1: Date, date2: Date): boolean {
 .box {
     padding: 1em;
     border-radius: 1em;
-    border: 2px solid #f5f5f533;
+    border: 2px solid var(--gray);
 }
 .attendance {
     display: flex;
@@ -302,7 +303,7 @@ function sameDay(date1: Date, date2: Date): boolean {
 }
 .button:disabled,
 .button[disabled] {
-    background-color: #f5f5f533;
+    background-color: var(--gray);
     cursor: default;
 }
 .attendance_button {
