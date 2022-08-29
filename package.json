@@ -9,8 +9,12 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^2.23.0",
+    "@vuepic/vue-datepicker": "^3.4.6",
+    "chart.js": "^3.9.1",
+    "chartjs-plugin-annotation": "^2.0.1",
     "mitt": "^3.0.0",
-    "vue": "^3.2.31"
+    "vue": "^3.2.31",
+    "vue-chartjs": "^4.1.1"
   },
   "devDependencies": {
     "@types/node": "^16.11.25",

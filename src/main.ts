@@ -13,8 +13,14 @@ app.config.globalProperties.$emitter = emitter;
 
 // Activar la cuenta si hay alguna ya registrada cuando se inicia la página
 const accounts = msalInstance.getAllAccounts();
-if (accounts.length > 0)
-    msalInstance.setActiveAccount(accounts[0]);
+if (accounts.length > 0) {
+    if (accounts.length > 1)
+        console.warn(`Hay ${accounts.length} cuentas logeadas`)
+    if (msalInstance.getActiveAccount() == null) {
+        console.log(`Ninguna cuenta activa, iniciando sesión con ${accounts[0]}`)
+        msalInstance.setActiveAccount(accounts[0]);
+    }
+}
 
 msalInstance.addEventCallback((event) => {
     // Activar la cuenta cuando se logee

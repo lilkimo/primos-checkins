@@ -16,3 +16,15 @@ export function relativeTime(now: Date): number {
     }
     return time;
 }
+
+export function mod(n: number, m: number) {
+    return ((n % m) + m) % m;
+}
+
+const _dayName = ["dom", "lun", "mar", "mié", "jue", "vie", "sab"]
+export const dayName = (weekStart: number = 0) => {
+    weekStart = mod(weekStart, 7)
+    return [..._dayName.slice(weekStart, _dayName.length), ..._dayName.slice(0, weekStart)]
+}
+
+export const url = "http://127.0.0.1:8000/api/"

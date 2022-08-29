@@ -2,9 +2,8 @@
 import ChevronDownIcon from "./icons/IconChevronDown.vue";
 </script>
 <script lang="ts">
-import { relativeTime } from "../resources/utils";
+import { relativeTime, url } from "../resources/utils";
 
-const url = "http://127.0.0.1:8000/api/";
 const now = await fetch(url + "now").then(response => response.json());
 const week = await fetch(url + "shifts/week").then(response => response.json())
 
@@ -38,7 +37,7 @@ export default {
             this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(new Date(this.time.datetime)));
         },
         updateWeek() {
-            return fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
+            fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
         },
         calculeTimeLineArgs() {
             this.blockWidth = parseFloat(window.getComputedStyle(this.$refs.first_block_column as Element).width);
@@ -82,7 +81,6 @@ function getExtension(checkin: string, checkout: string): number {
     return Math.max(1, getColumn(checkout) - getColumn(checkin))
 }
 </script>
-
 
 <template>
     <div class="clock fade_in" style = "position: absolute;"
@@ -147,7 +145,7 @@ body, html {
 .gantt {
     display: grid;
     border-radius: 1em;
-    border: 2px solid #f5f5f533;
+    border: 2px solid var(--gray);
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
@@ -226,7 +224,7 @@ body, html {
     border-radius: 1.5em;
 }
 .icon {
-    color: var(--blue);
+    fill: var(--blue);
 }
 .time_line {
     flex: 1;
