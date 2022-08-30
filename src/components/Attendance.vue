@@ -44,7 +44,14 @@ ChartJS.register(
 const date = ref()
 const selected = ref()
 
-const primos = await fetch(url + "primos").then(response => response.json());
+const primos = await fetch(url + "primos").then( r => r.json() );
+primos.sort( (a: any, b: any) => {
+    if (a.nick > b.nick)
+        return 1
+    if (a.nick < b.nick)
+        return -1;
+    return 0;
+} )
 
 export default defineComponent({
     components: { Line, Datepicker, IconOk, IconHelp, IconCancel, IconClock },
