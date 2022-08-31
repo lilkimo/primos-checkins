@@ -32,7 +32,11 @@ async function getGraphData() {
     });
 	if (inProgress.value === InteractionStatus.None) {
 		const graphData = await callMsGraph(response.accessToken);
-        state.data = await fetch(url + "primos/" + graphData.mail).then(response => response.json())
+        state.data = await fetch(url + "primos/" + graphData.mail).then(response => {
+            if (!response.ok)
+                instance.logoutRedirect({ account: instance.getActiveAccount() });
+            return response.json()
+        })
 		state.resolved = true;
 		stopWatcher();
 	}
