@@ -85,13 +85,13 @@ export default defineComponent({
     methods: {
         updateDatapoints() {
             if (date.value.length === undefined)
-                date.value = [date.value, new Date(new Date(date.value).setMilliseconds(86399999))]
+                date.value = [date.value, date.value]
             getDatapoints(selected.value, date.value[0], date.value[1]).then( r => {
                 this.shifts.ideal = r.ideal
-                this.shifts.inSchedule = r.inSchedule
-                this.shifts.suspicious = r.suspicious
+                this.shifts.inSchedule = r.inSchedule.length
+                this.shifts.suspicious = r.suspicious.length
                 this.data.labels = r.labels
-                this.data.datasets[0].data = r.datapoints
+                this.data.datasets[0].data = r.datapoints.map( (p: number) => p === null? NaN: p)
             })
         }
     },

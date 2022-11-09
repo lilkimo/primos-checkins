@@ -3,9 +3,9 @@ import { LogLevel, PublicClientApplication } from '@azure/msal-browser';
 // Config object to be passed to Msal on creation
 export const msalConfig = {
   auth: {
-    clientId: '72c38d69-9c3a-43fb-8b47-9c93a0ef9fd3',
-    redirectUri: 'https://pci.inf.santiago.usm.cl/', // Must be registered as a SPA redirectURI on your app registration
-    postLogoutRedirectUri: 'https://pci.inf.santiago.usm.cl/' // Must be registered as a SPA redirectURI on your app registration
+    clientId: 'c33042ff-88f4-47fe-964e-719140f9237f',
+    redirectUri: 'http://localhost:3000', // Must be registered as a SPA redirectURI on your app registration
+    postLogoutRedirectUri: 'http://localhost:3000' // Must be registered as a SPA redirectURI on your app registration
   },
   cache: {
     cacheLocation: 'localStorage'
