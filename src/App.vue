@@ -32,7 +32,14 @@ async function getGraphData() {
     });
 	if (inProgress.value === InteractionStatus.None) {
 		const graphData = await callMsGraph(response.accessToken);
-        state.data = await fetch(url + "primos/" + graphData.mail).then(response => response.json())
+        console.log(graphData)
+        state.data = await fetch(url + "primos/" + graphData.mail).then( (r: any) => {
+            console.log(r.ok)
+            if (!r.ok)
+                instance.logoutRedirect({ account: instance.getActiveAccount() })
+            else
+                return r.json()
+        })
 		state.resolved = true;
 		stopWatcher();
 	}
@@ -99,6 +106,7 @@ const stopWatcher = watch(inProgress, () => {
             style="height: 100%"
         />
     </div>
+    <div v-else>:( Algo salió mal con el logeo de la cuenta</div>
 </template>
 
 <style>

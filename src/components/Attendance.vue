@@ -51,7 +51,7 @@ primos.sort( (a: any, b: any) => {
     if (a.nick < b.nick)
         return -1;
     return 0;
-} )
+})
 
 export default defineComponent({
     components: { Line, Datepicker, IconOk, IconHelp, IconCancel, IconClock },

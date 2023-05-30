@@ -8,7 +8,7 @@ export const msalConfig = {
     postLogoutRedirectUri: 'https://pci.inf.santiago.usm.cl/' // Must be registered as a SPA redirectURI on your app registration
   },
   cache: {
-    cacheLocation: 'localStorage'
+    cacheLocation: 'sessionStorage'
   },
   system: {
       loggerOptions: {

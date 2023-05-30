@@ -27,12 +27,19 @@ function average(ctx: any) {
 export async function getDatapoints(mail: string, start: Date, end?: Date) {
     let params =  {
         mail: mail,
-        start: new Date(start.getTime() - start.getTimezoneOffset()*60*1000).toISOString()
+        start: new Date(start.getTime() - start.getTimezoneOffset()*60*1000).toISOString().slice(0, 10)
     }
     if (end !== null && end !== undefined)
-        Object.assign(params, { end: new Date(end.getTime() - end.getTimezoneOffset()*60*1000).toISOString() } )
+        Object.assign(params, { end: new Date(end.getTime() - end.getTimezoneOffset()*60*1000).toISOString().slice(0, 10) } )
 
     const resume = await fetch(url + "shifts?" + new URLSearchParams(params)).then(r => r.json())
+    resume.inSchedule.sort( (a: any, b: any) => {
+        if (a.checkin > b.checkin)
+            return 1
+        if (a.checkin < b.checkin)
+            return -1;
+        return 0;
+    })
 
     let currDay = new Date(resume.start)
     // Obtengo el horario relativo, donde <relativeSchedule.weekday> es
