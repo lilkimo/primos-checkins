@@ -146,10 +146,10 @@ export default {
         <vue-final-modal v-model="showModal" classes="modal-container" content-class="modal-content">
             <span class="modal__title">¿Estás Seguro?</span>
             <div class="modal__content">
-                Estás marcando salida antes de lo previsto. Recuerda que, una vez cerrado el turno, no podrás iniciar otro en el mismo bloque.
+                Estás marcando salida <u>antes de lo previsto</u>. Recuerda que, una vez cerrado el turno, <u>no podrás iniciar otro en el mismo bloque</u>.
             </div>
             <div class="modal__action">
-                <button class="button modal__button modal__button__confirm" @click="updateShift(); showModal = false">CONFIRMAR</button>
+                <button class="button modal__button modal__button__confirm" @click="updateShift().then( _ => showModal = false )">CONFIRMAR</button>
                 <button class="button modal__button modal__button__cancel" @click="showModal = false">CANCELAR</button>
             </div>
         </vue-final-modal>
@@ -171,16 +171,16 @@ export default {
             <div
                 v-if="rshift != null"
             >
-                <span>Tiempo de turno:</span>
+                <span>Tiempo restante de turno:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(now) - +new Date(rshift.checkin))/(60 * 60 * 1000))
+                            Math.floor((+new Date(nshift.checkout) - +new Date(now))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(now) - +new Date(rshift.checkin))/(60 * 1000)) % 60
+                            Math.floor((+new Date(nshift.checkout) - +new Date(now))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
@@ -265,6 +265,7 @@ export default {
                 </button>
             </div>
         </div>
+        <!--
         <div class="box aligns">
             <button class="button aligns_button">
                 REGISTROS
@@ -273,6 +274,7 @@ export default {
                 ESTADÍSTICAS
             </button>
         </div>
+        -->
     </div>
 </template>
 
@@ -359,8 +361,8 @@ export default {
     max-height: 90%;
     margin: 0 1rem;
     padding: 1rem;
-    border: 1px solid var(--gray);
-    border-radius: 0.25rem;
+    border: 2px solid var(--gray);
+    border-radius: 1rem;
     background: var(--color-background);
     gap: 1rem;
 }
@@ -383,5 +385,8 @@ export default {
 .modal__button__confirm {
     background-color: transparent;
     color: var(--green)
+}
+.modal__button__confirm:hover {
+    text-decoration: underline;
 }
 </style>
