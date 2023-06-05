@@ -83,7 +83,9 @@ function getExtension(checkin: string, checkout: string): number {
 </script>
 
 <template>
-    <div class="clock fade_in" style = "position: absolute;"
+    <div
+        class="clock fade_in"
+        style = "position: absolute;"
         :style="{ left: timeLinePosition + 'px', height: ganttHeight + clockDisplayHeight + 'px' }"
     >
         <div class="clock" ref="clock_display">
