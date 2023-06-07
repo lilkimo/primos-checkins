@@ -32,7 +32,6 @@ async function getGraphData() {
     });
 	if (inProgress.value === InteractionStatus.None) {
 		const graphData = await callMsGraph(response.accessToken);
-        console.log(graphData)
         state.data = await fetch(url + "primos/" + graphData.mail).then( (r: any) => {
             console.log(r.ok)
             if (!r.ok)

@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import LogoutIcon from "./icons/IconLogout.vue";
-
-import { useMsal } from '../composition-api/useMsal';
 import { url } from "@/resources/utils";
+
+import { isWithinInterval, isSameDay } from 'date-fns'
+
+// @ts-expect-error
+import { $vfm, VueFinalModal, ModalsContainer } from 'vue-final-modal'
+import { useMsal } from '../composition-api/useMsal';
+
 const { instance } = useMsal();
 
 const logout = () => {
@@ -11,16 +16,20 @@ const logout = () => {
 </script>
 
 <script lang="ts">
+
 const nowInfo = await fetch(url + "now").then(response => response.json());
 console.log(nowInfo)
 
 export default {
+    components: { VueFinalModal, ModalsContainer },
     props: {
         primoInfo: Object
     },
     data() {
         return {
-            datetime: new Date(nowInfo.datetime),
+            showModal: false,
+
+            now: new Date(nowInfo.datetime),
             primo: Object.assign({},
                 this.primoInfo,
                 { 
@@ -42,20 +51,20 @@ export default {
     },
     methods: {
         requestNow() {
-            fetch(url + "now").then(response => response.json()).then(now => {
-                this.datetime = new Date(now.datetime);
-                this.primo.onshift = now.upcoming.isactive && now.pair.some( (p: any) => p.mail == this.primo.mail )
+            fetch(url + "now").then(response => response.json()).then(data => {
+                this.now = new Date(data.datetime);
+                this.primo.onshift = data.upcoming.isactive && data.pair.some( (p: any) => p.mail == this.primo.mail )
                 
                 // Cada vez que cambia el bloque solicitamos de nuevo la
                 // info del primo, para ver cual es su siguiente turno
-                if (now.upcoming.block != this.ushift.block)
+                if (data.upcoming.block != this.ushift.block)
                     this.requestPrimo()
                 
                 this.ushift = {
-                    block: now.upcoming.block,
-                    checkin: now.upcoming.checkin,
-                    checkout: now.upcoming.checkout,
-                    pair: now.pair,
+                    block: data.upcoming.block,
+                    checkin: data.upcoming.checkin,
+                    checkout: data.upcoming.checkout,
+                    pair: data.pair,
                 }
             });
         },
@@ -67,8 +76,13 @@ export default {
             })
         },
         
-        pushShift(event: Event) {
-            (event.target as HTMLButtonElement).disabled = true;
+        setAttendanceButtonAvailability(state: boolean) {
+            let buttons = document.getElementsByClassName('attendance_button')
+            for (let i = 0; i < buttons.length; i++)
+                (buttons[i] as HTMLButtonElement).disabled = !state;
+        },
+        pushShift() {
+            this.setAttendanceButtonAvailability(false);
 
             const requestOptions = {
                 method: 'POST',
@@ -79,13 +93,13 @@ export default {
             };
 
             fetch(url + "shifts", requestOptions).then( response => {
+                this.setAttendanceButtonAvailability(true)
                 if (response.ok)
-                    return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
-                (event.target as HTMLButtonElement).disabled = false;
-            });
+                    return this.requestPrimo()
+            }).then( () => this.$emitter.emit("update-week") )
         },
-        async updateShift(event: Event) {
-            (event.target as HTMLButtonElement).disabled = true;
+        async updateShift() {
+            this.setAttendanceButtonAvailability(false)
 
             const requestOptions = {
                 method: 'PUT',
@@ -94,16 +108,27 @@ export default {
                     id: this.rshift.id
                 })
             };
-            return fetch(url + "shifts", requestOptions).then( response => {
-                if (response.ok)
-                    return this.requestPrimo().then( () => this.$emitter.emit("update-week") );
-                (event.target as HTMLButtonElement).disabled = false;
-            });
+            return fetch(url + "shifts", requestOptions)
+                .then( response => {
+                    this.setAttendanceButtonAvailability(true)
+                    if (response.ok)
+                        return this.requestPrimo()
+                }).then( () => this.$emitter.emit("update-week") )
         },
-        renewShift(event: Event) {
-            (event.target as HTMLButtonElement).disabled = true;
+        updateShiftSafety() {
+            if (isWithinInterval(
+                this.now, {
+                    start: new Date(this.ushift.checkin),
+                    end: new Date(this.ushift.checkout),
+            }))
+                this.showModal = true
+            else
+                this.updateShift()
+        },
+        renewShift() {
+            this.setAttendanceButtonAvailability(false)
 
-            return this.updateShift(event).then( () => this.pushShift(event) );
+            return this.updateShift().then( () => this.pushShift() );
         },
     },
     created() {
@@ -114,14 +139,20 @@ export default {
         clearInterval(this.requestNowInterval);
     }
 };
-
-function sameDay(date1: Date, date2: Date): boolean {
-    return date1.toDateString() == date2.toDateString();
-}
 </script>
 
 <template>
     <div class="pad">
+        <vue-final-modal v-model="showModal" classes="modal-container" content-class="modal-content">
+            <span class="modal__title">¿Estás Seguro?</span>
+            <div class="modal__content">
+                Estás marcando salida <u>antes de lo previsto</u>. Recuerda que, una vez cerrado el turno, <u>no podrás iniciar otro en el mismo bloque</u>.
+            </div>
+            <div class="modal__action">
+                <button class="button modal__button modal__button__confirm" @click="updateShift().then( _ => showModal = false )">CONFIRMAR</button>
+                <button class="button modal__button modal__button__cancel" @click="showModal = false">CANCELAR</button>
+            </div>
+        </vue-final-modal>
         <div class="box attendance">
             <div class="primo_onshift">
                 <div>
@@ -140,52 +171,52 @@ function sameDay(date1: Date, date2: Date): boolean {
             <div
                 v-if="rshift != null"
             >
-                <span>Tiempo de turno:</span>
+                <span>Tiempo restante de turno:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(datetime) - +new Date(rshift.checkin))/(60 * 60 * 1000))
+                            Math.floor((+new Date(nshift.checkout) - +new Date(now))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(datetime) - +new Date(rshift.checkin))/(60 * 1000)) % 60
+                            Math.floor((+new Date(nshift.checkout) - +new Date(now))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
             </div>
             <!--Si no hay turnos corriendo y el siguiente turno ya empezó-->
             <div
-                v-else-if="+new Date(nshift.checkin) <= +datetime"
+                v-else-if="+new Date(nshift.checkin) <= +now"
             >
                 <span>El turno empezó hace:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(datetime) - +new Date(nshift.checkin))/(60 * 60 * 1000))
+                            Math.floor((+new Date(now) - +new Date(nshift.checkin))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(datetime) - +new Date(nshift.checkin))/(60 * 1000)) % 60
+                            Math.floor((+new Date(now) - +new Date(nshift.checkin))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
             </div>
             <!--Si no hay turnos corriendo y el siguiente aún no empieza y es hoy-->
             <div
-                v-else-if="sameDay(new Date(nshift.checkin), datetime)"
+                v-else-if="isSameDay(new Date(nshift.checkin), now)"
             >
                 <span>Próximo turno en:</span>
                 <div class="upcoming_shift">
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(nshift.checkin) - +new Date(datetime))/(60 * 60 * 1000))
+                            Math.floor((+new Date(nshift.checkin) - +new Date(now))/(60 * 60 * 1000))
                         }}</span><span>h</span>
                     </span>
                     <span>
                         <span class="time">{{
-                            Math.floor((+new Date(nshift.checkin) - +new Date(datetime))/(60 * 1000)) % 60
+                            Math.floor((+new Date(nshift.checkin) - +new Date(now))/(60 * 1000)) % 60
                         }}</span><span>m</span>
                     </span>
                 </div>
@@ -219,10 +250,10 @@ function sameDay(date1: Date, date2: Date): boolean {
                 </button>
                 <!--Si hay algún turno corriendo y el siguiente no es inmediato-->
                 <button class="button attendance_button" style="background-color: var(--red);"
-                    v-on:click="updateShift"
+                    v-on:click="updateShiftSafety"
                     v-else-if="!primo.onshift || (rshift.block == ushift.block)"
                 >
-                    MARCAR&nbsp;<br>
+                    MARCAR<br>
                     SALIDA
                 </button>
                 <!--Si hay algún turno corriendo y el siguiente es inmediato-->
@@ -234,6 +265,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                 </button>
             </div>
         </div>
+        <!--
         <div class="box aligns">
             <button class="button aligns_button">
                 REGISTROS
@@ -242,6 +274,7 @@ function sameDay(date1: Date, date2: Date): boolean {
                 ESTADÍSTICAS
             </button>
         </div>
+        -->
     </div>
 </template>
 
@@ -311,5 +344,49 @@ function sameDay(date1: Date, date2: Date): boolean {
 }
 .aligns_button {
     padding: 0 .65em;
+}
+</style>
+
+<style scoped>
+:deep(.modal-container) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+:deep(.modal-content) {
+    max-width: 31rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 90%;
+    margin: 0 1rem;
+    padding: 1rem;
+    border: 2px solid var(--gray);
+    border-radius: 1rem;
+    background: var(--color-background);
+    gap: 1rem;
+}
+.modal__title {
+    margin: 0 2rem 0 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.modal__action {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+.modal__button {
+    padding: .5rem 1rem;
+}
+.modal__button__cancel {
+    background-color: var(--green);
+}
+.modal__button__confirm {
+    background-color: transparent;
+    color: var(--green)
+}
+.modal__button__confirm:hover {
+    text-decoration: underline;
 }
 </style>
