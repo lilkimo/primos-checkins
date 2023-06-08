@@ -80,6 +80,7 @@ export default defineComponent({
         IconOk, IconHelp, IconCancel, IconClock, // Iconos
         Line, // chart.js
         Datepicker, //vue-chartjs
+        // @ts-ignore
         VueFinalModal, ModalsContainer, // vue-final-modal
     },
     props: {
