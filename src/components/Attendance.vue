@@ -153,32 +153,6 @@ export default defineComponent({
                 this.attendance.shifts.sort( (s1: {checkin: Date}, s2: {checkin: Date}) => differenceInMilliseconds(s1.checkin, s2.checkin) )
             })
         },
-        async openModal() {
-            this.showModal = true
-            // Esta promesa es para esperar a que el modal se muestre y poder obtener su
-            // styling, si no retorna cualquier cosa
-            // await new Promise(_ => setTimeout(_, 10))
-            
-            // const modalContent = document.getElementsByClassName("modal-content")[1] as Element
-            // const modalContentStyle = window.getComputedStyle(modalContent)
-            // let modalMaxHeight = modalContentStyle.maxHeight
-            // if (modalMaxHeight.slice(-1) == "%")
-            //     modalMaxHeight = `${window.innerHeight}px*${parseFloat(modalMaxHeight.slice(0, -1))/100}`
-            // const modalBorder = modalContentStyle.borderWidth
-            // const modalPaddingTop = modalContentStyle.paddingTop
-            // const modalPaddingBottom = modalContentStyle.paddingBottom
-            // const modalGap = modalContentStyle.rowGap // * modalContent.children.length - 1
-            // let modalHeight = []
-            // for (let child of Array.from(modalContent.children))
-            //     if (child.id != "table")
-            //         modalHeight.push(window.getComputedStyle(child).height)
-            
-            // const headersStyle = window.getComputedStyle(document.getElementById("table_headers") as Element)
-            // const headersHeight = headersStyle.height
-            // const headersWidth = headersStyle.width
-            
-            // this.modalHeight = `calc(${modalMaxHeight} - ${modalBorder}*2 - ${modalPaddingTop} - ${modalPaddingBottom} - ${modalGap}*${modalContent.children.length - 1} - (${modalHeight.join('+')}) - ${headersHeight})`
-        }
     },
     mounted() {
         const startDate = new Date()
