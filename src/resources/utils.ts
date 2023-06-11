@@ -27,4 +27,4 @@ export const dayName = (weekStart: number = 0) => {
     return [..._dayName.slice(weekStart, _dayName.length), ..._dayName.slice(0, weekStart)]
 }
 
-export const url = "http://127.0.0.1:8000/api/"
+export const url = "http://prime.inf.santiago.usm.cl:8001/api/"

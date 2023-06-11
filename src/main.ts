@@ -21,6 +21,7 @@ if (accounts.length > 0) {
         msalInstance.setActiveAccount(accounts[0]);
     }
 }
+console.log(accounts)
 
 msalInstance.addEventCallback((event) => {
     // Activar la cuenta cuando se logee
