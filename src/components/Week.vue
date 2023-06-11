@@ -3,6 +3,7 @@ import ChevronDownIcon from "./icons/IconChevronDown.vue";
 </script>
 <script lang="ts">
 import { relativeTime, url } from "../resources/utils";
+import { isSameDay, endOfDay } from 'date-fns'
 
 const now = await fetch(url + "now").then(response => response.json());
 const week = await fetch(url + "shifts/week").then(response => response.json())
@@ -33,11 +34,23 @@ export default {
                 };
             });
         },
-        setTimeLinePosition() {
-            this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(new Date(this.time.datetime)));
-        },
         updateWeek() {
             fetch(url + "shifts/week").then(response => response.json()).then(w => this.week = w);
+        },
+
+        getExtension(checkin: string, checkout: string | null): number {
+            let fixedCheckout: string | Date
+            if (checkout != null)
+                fixedCheckout = checkout
+            else if (isSameDay(new Date(checkin), new Date(this.time.datetime)))
+                fixedCheckout = this.time.datetime
+            else
+                fixedCheckout = endOfDay(new Date(checkin))
+            return Math.max(1, getColumn(fixedCheckout) - getColumn(checkin))
+        },
+        
+        setTimeLinePosition() {
+            this.timeLinePosition = this.timeLineOffset + (this.blockWidth * relativeTime(new Date(this.time.datetime)));
         },
         calculeTimeLineArgs() {
             this.blockWidth = parseFloat(window.getComputedStyle(this.$refs.first_block_column as Element).width);
@@ -74,12 +87,7 @@ export default {
     },
 };
 
-function getColumn(checkin: string): number {
-    return Math.ceil(relativeTime(new Date(checkin))*30) + 1;
-}
-function getExtension(checkin: string, checkout: string): number {
-    return Math.max(1, getColumn(checkout) - getColumn(checkin))
-}
+const getColumn = (checkin: string | Date) => Math.ceil(relativeTime(new Date(checkin))*30) + 1
 </script>
 
 <template>
@@ -129,7 +137,7 @@ function getExtension(checkin: string, checkout: string): number {
                     v-for="shift in week[index]"
                     :key="shift.id"
                     :style="{
-                        'grid-column': getColumn(shift.checkin) + '/span ' + getExtension(shift.checkin, shift.checkout?? time.datetime),
+                        'grid-column': getColumn(shift.checkin) + '/span ' + getExtension(shift.checkin, shift.checkout),
                         'background-color': 'var(--green)'
                     }"
                 >
