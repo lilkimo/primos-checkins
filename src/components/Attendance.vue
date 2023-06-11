@@ -30,6 +30,7 @@ import IconOk from './icons/IconOk.vue';
 import IconHelp from './icons/IconHelp.vue';
 import IconCancel from './icons/IconCancel.vue';
 import IconClock from './icons/IconClock.vue';
+import IconClose from './icons/IconClose.vue';
 
 ChartJS.defaults.font.size = 14
 ChartJS.defaults.font.family = "Roboto"
@@ -77,7 +78,7 @@ const primos = await fetch(url + "primos").then(response => response.json());
 
 export default defineComponent({
     components: {
-        IconOk, IconHelp, IconCancel, IconClock, // Iconos
+        IconOk, IconHelp, IconCancel, IconClock, IconClose,// Iconos
         Line, // chart.js
         Datepicker, //vue-chartjs
         // @ts-ignore
@@ -240,7 +241,7 @@ export default defineComponent({
             </div>
             <div
                 class="side"
-                v-on:click="openModal"
+                v-on:click="showModal = true"
             >
                 <div class="line">
                     <IconClock class="icon" /> {{ attendance.scheduled.length }}
@@ -261,9 +262,10 @@ export default defineComponent({
                         id="modal_title"
                         class="modal__title"
                     >
-                        Turnos de {{ primos.find( (p: {mail: string}) => p.mail == selected )?.nick }} {{ datePickerFormat(date) }}
+                        Turnos de {{ primos.find( (p: {mail: string}) => p.mail == selected )?.nick }} ({{ datePickerFormat(date) }})
                     </span>
-                    <button class="button modal__button modal__button__cancel" @click="showModal = false">CANCELAR</button>
+                    <!-- <button class="button modal__button modal__button__cancel" @click="showModal = false">CANCELAR</button> -->
+                    <IconClose class="icon" style="cursor: pointer;" v-on:click="showModal = false"/>
                 </div>
                 <div class="grid_container">
                     <span class="grid_item grid_header">
