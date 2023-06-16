@@ -1,0 +1,12 @@
+export const apiUrl = 'http://localhost:8001/api/'
+
+// Para obtener esta info tienes que generar un token
+// https://learn.microsoft.com/en-us/azure/active-directory/develop/scenario-spa-app-registration
+// También tienes que agregar el 'login_hint optional claim'
+// en la configuración del token de la aplicación en Azure Portal
+// https://stackoverflow.com/a/71299790/14154498
+export const msalAuthData = {
+    clientId: '00000000-0000-0000-0000-000000000000',
+    redirectUri: 'http://localhost:3000',
+    postLogoutRedirectUri: 'http://localhost:3000',
+}

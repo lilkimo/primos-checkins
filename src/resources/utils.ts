@@ -1,4 +1,5 @@
 import bloques from "../resources/bloques.json";
+import { apiUrl } from '../../config.js'
 
 export function relativeTime(now: Date): number {
     const minutes = (now.getHours()*60) + now.getMinutes();
@@ -27,4 +28,5 @@ export const dayName = (weekStart: number = 0) => {
     return [..._dayName.slice(weekStart, _dayName.length), ..._dayName.slice(0, weekStart)]
 }
 
-export const url = "http://prime.inf.santiago.usm.cl:8001/api/"
+// Me dió lata cambiar este valor en todo el proyecto xd, queda pendiente
+export const url = apiUrl
