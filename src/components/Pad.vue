@@ -242,6 +242,7 @@ export default {
                 <button class="button attendance_button"
                     v-if="rshift == null"
                     :disabled="!primo.onshift" 
+                    v-on:click=" () => { if (primo.onshift) pushShift() }"
                 >
                     INICIAR<br>
                     TURNO
